@@ -24,8 +24,8 @@ export default {
   SECURE_ROUTES: [
     { path: '/dashboard', name: 'Dashboard', component: async () => import('./views/Dashboard.vue') },
     { path: '/demo/article', name: 'Article Generation', component: async () => import('./views/Demo/GenerateArticle.vue') },
-    { path: '/demo/caption', name: 'Caption Generation', component: async () => import('./views/Demo/GenerateCaption.vue') }
-    // { path: '/demo/test', name: 'Tests', component: async () => import('./views/Demo/DemoTest.vue') },
+    { path: '/demo/caption', name: 'Caption Generation', component: async () => import('./views/Demo/GenerateCaption.vue') },
+    { path: '/demo/reviews', name: 'Response Generation', component: async () => import('./views/Demo/GenerateReviews.vue') },
     // { path: '/demo/web-cam', name: 'Web Cam', component: () => import('./views/Demo/DemoWebCam.vue') },
     // { path: '/demo/sign-pad', name: 'Sign Pad', component: async () => import('./views/Demo/DemoSignPad.vue') },
     // { path: '/demo/table-edit', name: 'Table Edit', component: async () => import('./views/Demo/DemoTableEdit.vue') },

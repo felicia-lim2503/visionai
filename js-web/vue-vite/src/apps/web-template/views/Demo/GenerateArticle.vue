@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h2>Article Generation</h2>
     <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
       <a-form>
         <a-row :gutter="[16, 16]">
@@ -88,43 +89,40 @@
   </div>
 </template>
 <script>
-import { defineComponent, ref, onMounted } from "vue"
-const { VITE_API_KEY } = import.meta.env.development
-import {
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
-} from "@ant-design/icons-vue"
+import * as http from '../../../../../http.js'
+import { defineComponent, ref, onMounted } from 'vue'
+const { VITE_API_KEY } = import.meta.env
+import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons-vue'
 export default defineComponent({
   components: {
     UserOutlined,
     LaptopOutlined,
-    NotificationOutlined,
+    NotificationOutlined
   },
   setup() {
-    let title1 = ref("")
-    let article1 = ref("")
-    let title2 = ref("")
-    let article2 = ref("")
-    let title3 = ref("")
-    let article3 = ref("")
-    let inputTitle = ref("")
-    let outputTitle = ref("")
-    let outputArticle = ref("")
-    let outputCaption = ref("")
-    let captionTopic = ref("")
+    let title1 = ref('')
+    let article1 = ref('')
+    let title2 = ref('')
+    let article2 = ref('')
+    let title3 = ref('')
+    let article3 = ref('')
+    let inputTitle = ref('')
+    let outputTitle = ref('')
+    let outputArticle = ref('')
+    let outputCaption = ref('')
+    let captionTopic = ref('')
     let keyPhrases = ref([])
-    let keyPhrase = ref("")
+    let keyPhrase = ref('')
 
     let spinning = ref(false)
 
-    let OPENAI_API_KEY = ref("")
+    let OPENAI_API_KEY = ref('')
 
     const activeKey = ref([])
     const text = `A dog is a type of domesticated animal.Known for its loyalty and faithfulness,it can be found as a welcome guest in many households across the world.`
 
     onMounted(async () => {
-      console.log("VITE_API_KEY",VITE_API_KEY)
+      // console.log('VITE_API_KEY', VITE_API_KEY)
     })
 
     const delayTime = ref(500)
@@ -135,12 +133,11 @@ export default defineComponent({
     let spinningKey = ref(0)
 
     const generateArticle = async () => {
-
       changeSpinning()
       //get data from api
       let myHeaders = new Headers()
-      myHeaders.append("Authorization", `Bearer ${VITE_API_KEY}`)
-      myHeaders.append("Content-Type", "application/json")
+      myHeaders.append('Authorization', `Bearer ${VITE_API_KEY}`)
+      myHeaders.append('Content-Type', 'application/json')
 
       let raw = JSON.stringify({
         // prompt: `${title1.value}\n${article2.value}\n\n${title2.value}\n${article2.value}\n\n${title3.value}\n${article3.value}\n\n${inputTitle.value}\n`,
@@ -150,42 +147,39 @@ export default defineComponent({
         top_p: 0.1,
         frequency_penalty: 0.8,
         presence_penalty: 1.0,
-        stop: ["\n\n"]
+        stop: ['\n\n']
       })
 
       let requestOptions = {
-        method: "POST",
+        method: 'POST',
         headers: myHeaders,
         body: raw,
-        redirect: "follow",
+        redirect: 'follow'
       }
 
       try {
-        const response = await fetch(
-          `https://api.openai.com/v1/engines/davinci/completions`,
-          requestOptions
-        )
+        const response = await fetch(`https://api.openai.com/v1/engines/davinci/completions`, requestOptions)
         const result = await response.json()
         changeSpinning()
-        console.log("result", result)
+        console.log('result', result)
         outputTitle.value = inputTitle.value
         outputArticle.value = result.choices[0].text
+        clearAll()
       } catch (e) {
-        console.log("Generate Article Error", e.toString())
+        console.log('Generate Article Error', e.toString())
       }
-      clearAll()
     }
 
     const generateCaption = async () => {
       changeSpinning()
       //get data from api
       let myHeaders = new Headers()
-      myHeaders.append("Authorization", `Bearer ${VITE_API_KEY}`)
-      myHeaders.append("Content-Type", "application/json")
+      myHeaders.append('Authorization', `Bearer ${VITE_API_KEY}`)
+      myHeaders.append('Content-Type', 'application/json')
 
       for (let item in keyPhrases.value) {
         if (item != keyPhrases.value.length - 1) {
-          allPhrases.value += keyPhrases.value[item] + ", "
+          allPhrases.value += keyPhrases.value[item] + ', '
         } else {
           allPhrases.value += keyPhrases.value[item]
         }
@@ -197,51 +191,48 @@ export default defineComponent({
         max_tokens: 100,
         top_p: 1,
         frequency_penalty: 0.0,
-        presence_penalty: 0.0,
+        presence_penalty: 0.0
       })
 
       let requestOptions = {
-        method: "POST",
+        method: 'POST',
         headers: myHeaders,
         body: raw,
-        redirect: "follow",
+        redirect: 'follow'
       }
 
       try {
-        const response = await fetch(
-          `https://api.openai.com/v1/engines/davinci-instruct-beta/completions`,
-          requestOptions
-        )
+        const response = await fetch(`https://api.openai.com/v1/engines/davinci-instruct-beta/completions`, requestOptions)
         const result = await response.json()
         changeSpinning()
-        console.log("result", result)
+        console.log('result', result)
         outputCaption.value = result.choices[0].text
       } catch (e) {
-        console.log("Generate Article Error", e.toString())
+        console.log('Generate Article Error', e.toString())
       }
     }
 
     const clearAll = () => {
-      title1.value = ""
-      title2.value = ""
-      title3.value = ""
-      article1.value = ""
-      article2.value = ""
-      article3.value = ""
-      inputTitle.value = ""
+      title1.value = ''
+      title2.value = ''
+      title3.value = ''
+      article1.value = ''
+      article2.value = ''
+      article3.value = ''
+      inputTitle.value = ''
     }
 
     const clearAllCaptionInput = () => {
-      captionTopic.value = ""
+      captionTopic.value = ''
       keyPhrases.value = []
-      keyPhrase.value = ""
+      keyPhrase.value = ''
     }
 
-    let allPhrases = ref("")
+    let allPhrases = ref('')
 
     const addPhrases = () => {
       keyPhrases.value.push(keyPhrase.value)
-      keyPhrase.value = ""
+      keyPhrase.value = ''
     }
 
     return {
@@ -270,14 +261,14 @@ export default defineComponent({
       generateCaption,
       changeSpinning,
       spinningKey,
-      selectedKeys1: ref(["2"]),
-      selectedKeys2: ref(["1"]),
-      openKeys: ref(["sub1"]),
+      selectedKeys1: ref(['2']),
+      selectedKeys2: ref(['1']),
+      openKeys: ref(['sub1']),
 
       activeKey,
-      text,
+      text
     }
-  },
+  }
 })
 </script>
 <style>
