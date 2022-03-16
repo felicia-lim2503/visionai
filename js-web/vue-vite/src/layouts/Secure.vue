@@ -3,7 +3,9 @@
     <bwc-loading-overlay v-if="loading"></bwc-loading-overlay>
     <a-back-top />
     <a-layout-sider :style="{ overflowY: 'auto', height: '100vh' }" v-model:collapsed="collapsed" :trigger="null" collapsible :collapsed-width="0">
-      <div class="logo" :style="`background-image: url('https://via.placeholder.com/168x32.png?text=A+Logo');`" />
+      <div class="logo">
+        <img src="/img/vision-logo.png" class="logo-css" />
+      </div>
       <a-menu theme="dark" mode="inline" v-model:selectedKeys="selectedKeys">
         <template v-for="route in mappedRoutes">
           <a-sub-menu v-if="route.submenu" :key="route.submenu" :title="toPascalCase(route.submenu)">
@@ -127,11 +129,19 @@ export default {
 
 .logo {
   height: 32px;
-  background: rgba(255, 255, 255, 0.3);
+  /* background: rgba(255, 255, 255, 0.3); */
   margin: 16px;
 }
 
 .site-layout .site-layout-background {
   background: #fff;
+}
+
+.logo-css{
+   width:100%;
+   max-height:550px;
+   object-fit:cover;
+   object-position:50% 50%;
+
 }
 </style>

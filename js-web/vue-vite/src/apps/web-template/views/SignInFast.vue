@@ -1,8 +1,8 @@
 <template>
   <div class="super-center-parent" >
-    <a-result title="Welcome To JS Dashboard" sub-title="Your one-stop web portal for all things web">
+    <a-result title="Vision AI Demo" sub-title="Content Generation Demo">
       <template #icon>
-        <a-image :width="150" src="https://via.placeholder.com/150x150.png?text=A+Logo" />
+        <a-image :width="150" src="/img/vision-logo.png" />
       </template>
       <template #extra>
         <a-button type="primary" html-type="button" @click="login">Log in</a-button>
