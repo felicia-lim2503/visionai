@@ -19,7 +19,7 @@
   "dependencies": {
     "@ant-design/icons-vue": "^6.0.1",
     "@antv/data-set": "^0.11.8",
-    "@antv/g2": "^4.1.40",
+    "@antv/g2": "^4.1.49",
     "@antv/g2plot": "^2.4.7",
     "@antv/g6": "^4.5.3",
     "@sentry/tracing": "^6.16.1",
