@@ -10,14 +10,15 @@ const axios = require("axios");
 const csv = require("fast-csv");
 const papa = require("papaparse");
 const path = require("path");
-const { count } = require("console");
+const { count, clear } = require("console");
+const { clearInterval } = require("timers");
 
 const upload = multer({ dest: "./uploadedFiles/" });
 
 function transpose(a) {
   // Calculate the width and height of the Array
-  var w = a.length || 0;
-  var h = a[0] instanceof Array ? a[0].length : 0;
+  let w = a.length || 0;
+  let h = a[0] instanceof Array ? a[0].length : 0;
 
   // In case it is a zero matrix, no transpose routine needed.
   if (h === 0 || w === 0) {
@@ -25,11 +26,11 @@ function transpose(a) {
   }
 
   /**
-   * @var {Number} i Counter
-   * @var {Number} j Counter
-   * @var {Array} t Transposed data is stored in this array.
+   * @let {Number} i Counter
+   * @let {Number} j Counter
+   * @let {Array} t Transposed data is stored in this array.
    */
-  var i,
+  let i,
     j,
     t = [];
 
@@ -50,24 +51,24 @@ function transpose(a) {
 }
 
 async function saveInput(req) {
-  var xlsx = require("node-xlsx");
-  var fs = require("fs");
-  var obj = xlsx.parse(req.file.path); // parses a file
-  var rows = [];
-  var writeStr = "";
+  let xlsx = require("node-xlsx");
+  let fs = require("fs");
+  let obj = xlsx.parse(req.file.path); // parses a file
+  let rows = [];
+  let writeStr = "";
 
   //looping through all sheets
-  for (var i = 0; i < obj.length; i++) {
-    var sheet = obj[i];
+  for (let i = 0; i < obj.length; i++) {
+    let sheet = obj[i];
     //loop through all rows in the sheet
-    for (var j = 0; j < sheet["data"].length; j++) {
+    for (let j = 0; j < sheet["data"].length; j++) {
       //add the row to the rows array
       rows.push(sheet["data"][j]);
     }
   }
 
   //creates the csv string to write it to a file
-  for (var i = 0; i < rows.length; i++) {
+  for (let i = 0; i < rows.length; i++) {
     writeStr += rows[i].join(",") + "\n";
   }
 
@@ -118,35 +119,112 @@ function getModel(data) {
   return model;
 }
 
+function exportToCsv(filename, rows) {
+  let processRow = function (row) {
+    let finalVal = "";
+    for (let j = 0; j < row.length; j++) {
+      let innerValue = row[j] === null ? "" : row[j].toString();
+      if (row[j] instanceof Date) {
+        innerValue = row[j].toLocaleString();
+      }
+      let result = innerValue.replace(/"/g, '""');
+      if (result.search(/("|,|\n)/g) >= 0) result = '"' + result + '"';
+      if (j > 0) finalVal += ",";
+      finalVal += result;
+    }
+    return finalVal + "\n";
+  };
+
+  let csvFile = "";
+  for (let i = 0; i < rows.length; i++) {
+    csvFile += processRow(rows[i]);
+  }
+
+  let blob = new Blob([csvFile], { type: "text/csv;charset=utf-8;" });
+  if (navigator.msSaveBlob) {
+    // IE 10+
+    navigator.msSaveBlob(blob, filename);
+  } else {
+    let link = document.createElement("a");
+    if (link.download !== undefined) {
+      // feature detection
+      // Browsers that support HTML5 download attribute
+      let url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+}
+
+async function callAPI(rating_str, res) {
+  return new Promise((resolve) => {
+    const { Configuration, OpenAIApi } = require("openai");
+    const configuration = new Configuration({
+      apiKey: OPENAI_API,
+    });
+    const openai = new OpenAIApi(configuration);
+    const response = openai.createCompletion("text-davinci-002", {
+      prompt: `Write a product review based on these notes:\n\n${rating_str}${res}\n\nReview:`,
+      temperature: 0.5,
+      max_tokens: 100,
+      top_p: 1,
+      frequency_penalty: 1.01,
+      presence_penalty: 0.48,
+    });
+    setTimeout(() => {
+      resolve(response);
+    }, Math.floor(Math.random() * 5000));
+  });
+}
+
 async function feedModel(cleanedData) {
+  let result = [];
+  let output = [["respid", "qn", "rating", "response", "new_response"]];
+
   try {
-    let data = cleanedData;
-    for (const [key, value] of Object.entries(data)) {
+    for (const [index, [key, value]] of Object.entries(
+      Object.entries(cleanedData)
+    )) {
       for (const [k, v] of Object.entries(value)) {
         let obj = v;
-        for (let i in obj) {
+        // console.log("obj", obj.new_response);
+        let response;
+        let row = [];
+        if (index <= 20) {
           if (obj.new_response == "") {
-            const { Configuration, OpenAIApi } = require("openai");
-            const configuration = new Configuration({
-              apiKey: OPENAI_API,
-            });
-            const openai = new OpenAIApi(configuration);
-            const response = await openai.createCompletion("text-davinci-002", {
-              prompt: `Write a product review based on these notes:\n\n${obj.rating}${obj.response}\n\nReview:`,
-              temperature: 0.5,
-              max_tokens: 100,
-              top_p: 1,
-              frequency_penalty: 1.01,
-              presence_penalty: 1.01,
-            });
-            obj.new_response = response.data.choices[0].text
-            console.log("output", obj)
-            // console.log("response", response.data.choices[0].text);
+            const promises = [];
+            promises.push(await callAPI(obj.rating_str, obj.response));
+            Promise.all(promises)
+              .then((results) => {
+                obj.new_response = results[0].data.choices[0].text;
+                row = [
+                  obj.respid,
+                  obj.qn,
+                  obj.rating,
+                  obj.response,
+                  obj.new_response.trim(),
+                ];
+
+                // console.log("row", row);
+                output.push(row);
+                // console.log("output", output);
+                // console.log("print")
+              })
+              .catch((e) => {
+                // Handle errors here
+                console.log("errorS?", e);
+              });
           }
         }
       }
     }
-    // console.log("output",data)
+
+    // console.log("output2", output);
+    return output;
   } catch (e) {
     console.log("error!", e);
   }
@@ -177,11 +255,12 @@ function cleanData(data) {
           }
 
           let numOfWords = countWords(eachReview[3]);
-          if (numOfWords > 4) {
+          if (numOfWords > 5) {
             reviewObj = {
               [data[0][0]]: eachReview[0],
               [data[0][1]]: eachReview[1],
-              [data[0][2]]: rating,
+              [data[0][2]]: eachReview[2],
+              rating_str: rating,
               [data[0][3]]: eachReview[3],
               new_response: "",
             };
@@ -189,50 +268,34 @@ function cleanData(data) {
             reviewObj = {
               [data[0][0]]: eachReview[0],
               [data[0][1]]: eachReview[1],
-              [data[0][2]]: rating,
+              [data[0][2]]: eachReview[2],
+              rating_str: rating,
               [data[0][3]]: eachReview[3],
               new_response:
                 "Unable to generate new response as it is too short",
             };
           }
         }
+        cleanedData.push({ [key]: reviewObj });
       }
-      cleanedData.push({ [key]: reviewObj });
     }
-    // console.log("reviewArray", reviewArray);
+    // console.log("cleanedData", cleanedData);
     return cleanedData;
   } catch (e) {
     console.log("error->", e);
   }
 }
 
-function generateReview(data) {
+async function generateReview(data) {
+  let cleanedData;
   try {
-    let cleanedData = cleanData(data);
-    let generate = feedModel(cleanedData);
+    cleanedData = cleanData(data);
+    // return cleanedData;
+    let generate = await feedModel(cleanedData);
+    return generate;
   } catch (e) {
     console.log("error->", e);
   }
-  // let modelArray;
-  // let modelStr;
-  // try {
-  //   //call getModel and get obj
-  //   modelArray = getModel(data);
-  //   // console.log("modelArray -", modelArray);
-  //   //for each obj in the array, run the api
-  //   for (let index in modelArray) {
-  //     //concat all reviews into one string
-  //     for (let productKey in modelArray[index]) {
-  //       modelStr = modelArray[index][productKey].join(". ");
-  //       // console.log("INPUT-------------->", modelStr);
-  //       let output = feedModel(modelStr);
-  //     }
-  //   }
-  // } catch (e) {
-  //   console.log("error!", e);
-  // }
-
-  // return modelArray;
 }
 
 module.exports = express
@@ -257,17 +320,18 @@ module.exports = express
         data.push(results.data);
         count++;
       },
-      complete: function (results, file) {
+      complete: async function (results, file) {
         let output;
         try {
           console.log("parsing complete read", count, "records.");
           // data = transpose(data);
-          output = generateReview(data);
+          output = await generateReview(data);
+          console.log("output", output);
+          return res.json(output);
           //run the openai function
         } catch (e) {
           console.log("error!", e);
         }
-        return res.json(output);
       },
     });
   });
