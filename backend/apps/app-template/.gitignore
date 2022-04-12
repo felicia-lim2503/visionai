@@ -2,6 +2,7 @@
 config/secret/*
 !config/secret/README.md
 config/*
+config/secret/development.env.js
 
 # deploy
 deploy/*
