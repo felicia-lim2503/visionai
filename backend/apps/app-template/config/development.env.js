@@ -13,7 +13,7 @@ module.exports = {
 
   JWT_REFRESH_STORE: "keyv",
 
-  OPENAI_API: "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",
+  OPENAI_API: "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",
 
   USE_GRAPHQL: true,
   CORS_ORIGINS: [

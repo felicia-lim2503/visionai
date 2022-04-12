@@ -95,7 +95,7 @@ async function feedModel(cleanedData) {
       for (const [k, v] of Object.entries(value)) {
         let obj = v;
         let row = [];
-        if (index <= 60) { 
+        if (index <= 10) { 
           if (obj.new_response == "") {
             const promises = [];
             promises.push(await callAPI(obj.rating_str, obj.response));
