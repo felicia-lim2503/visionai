@@ -15,40 +15,6 @@ const { clearInterval } = require("timers");
 
 const upload = multer({ dest: "./uploadedFiles/" });
 
-function transpose(a) {
-  // Calculate the width and height of the Array
-  let w = a.length || 0;
-  let h = a[0] instanceof Array ? a[0].length : 0;
-
-  // In case it is a zero matrix, no transpose routine needed.
-  if (h === 0 || w === 0) {
-    return [];
-  }
-
-  /**
-   * @let {Number} i Counter
-   * @let {Number} j Counter
-   * @let {Array} t Transposed data is stored in this array.
-   */
-  let i,
-    j,
-    t = [];
-
-  // Loop through every item in the outer array (height)
-  for (i = 0; i < h; i++) {
-    // Insert a new row (array)
-    t[i] = [];
-
-    // Loop through every item per item in outer array (width)
-    for (j = 0; j < w; j++) {
-      // Save transposed data.
-
-      t[i][j] = a[j][i];
-    }
-  }
-
-  return t;
-}
 
 async function saveInput(req) {
   let xlsx = require("node-xlsx");
@@ -98,68 +64,6 @@ function countWords(str) {
   return length;
 }
 
-function getModel(data) {
-  let model = [];
-  try {
-    for (let productKey in data) {
-      let modelArray = [];
-      for (let review of data[productKey]) {
-        //access each review in array
-        let numOfWords = countWords(review);
-        if (numOfWords > 7) {
-          modelArray.push(review); //push all the reviews of each product in modelArray
-        }
-      }
-
-      model.push({ [productKey]: modelArray });
-    }
-  } catch (e) {
-    console.log("error:", e);
-  }
-  return model;
-}
-
-function exportToCsv(filename, rows) {
-  let processRow = function (row) {
-    let finalVal = "";
-    for (let j = 0; j < row.length; j++) {
-      let innerValue = row[j] === null ? "" : row[j].toString();
-      if (row[j] instanceof Date) {
-        innerValue = row[j].toLocaleString();
-      }
-      let result = innerValue.replace(/"/g, '""');
-      if (result.search(/("|,|\n)/g) >= 0) result = '"' + result + '"';
-      if (j > 0) finalVal += ",";
-      finalVal += result;
-    }
-    return finalVal + "\n";
-  };
-
-  let csvFile = "";
-  for (let i = 0; i < rows.length; i++) {
-    csvFile += processRow(rows[i]);
-  }
-
-  let blob = new Blob([csvFile], { type: "text/csv;charset=utf-8;" });
-  if (navigator.msSaveBlob) {
-    // IE 10+
-    navigator.msSaveBlob(blob, filename);
-  } else {
-    let link = document.createElement("a");
-    if (link.download !== undefined) {
-      // feature detection
-      // Browsers that support HTML5 download attribute
-      let url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
-}
-
 async function callAPI(rating_str, res) {
   return new Promise((resolve) => {
     const { Configuration, OpenAIApi } = require("openai");
@@ -182,7 +86,6 @@ async function callAPI(rating_str, res) {
 }
 
 async function feedModel(cleanedData) {
-  let result = [];
   let output = [["respid", "qn", "rating", "response", "new_response"]];
 
   try {
@@ -191,10 +94,8 @@ async function feedModel(cleanedData) {
     )) {
       for (const [k, v] of Object.entries(value)) {
         let obj = v;
-        // console.log("obj", obj.new_response);
-        let response;
         let row = [];
-        if (index <= 20) {
+        if (index <= 60) { 
           if (obj.new_response == "") {
             const promises = [];
             promises.push(await callAPI(obj.rating_str, obj.response));
@@ -288,10 +189,11 @@ function cleanData(data) {
 
 async function generateReview(data) {
   let cleanedData;
+  let generate;
   try {
     cleanedData = cleanData(data);
     // return cleanedData;
-    let generate = await feedModel(cleanedData);
+    generate = await feedModel(cleanedData);
     return generate;
   } catch (e) {
     console.log("error->", e);
@@ -313,7 +215,6 @@ module.exports = express
     );
     const file = fs.createReadStream(coolPath);
     let data = [];
-    let reviews = {};
     let count = 0; // cache the running count
     papa.parse(file, {
       step: function (results) {
@@ -324,14 +225,19 @@ module.exports = express
         let output;
         try {
           console.log("parsing complete read", count, "records.");
-          // data = transpose(data);
           output = await generateReview(data);
           console.log("output", output);
-          return res.json(output);
-          //run the openai function
+
+          fs.unlink(coolPath, (err) => {
+            if (err) {
+              console.error(err);
+              return;
+            }
+          });
         } catch (e) {
           console.log("error!", e);
         }
+        return res.json(output);
       },
     });
   });

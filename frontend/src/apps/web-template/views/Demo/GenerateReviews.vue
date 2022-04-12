@@ -1,37 +1,41 @@
 <template>
   <div>
-    <h2>Generate/Refurbish Surveyees' Responses</h2>
-    <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
-      <a-row :gutter="[16, 16]" style="margin-top: 5px">
-        <a-col style="width: 100%">
-          <form @submit.prevent="onSubmit" enctype="multipart/form-data">
-            <!-- Doc Photo -->
-            <div class="field">
-              <label class="label has-text-left">Survey Inputs</label>
-              <div class="file has-name">
-                <label class="file-label">
-                  <input class="file-input" type="file" id="file1" name="file1" @change="uploadDoc" required />
-                  <span class="file-cta is-Green">
-                    <!-- <font-awesome-icon class="icon" :icon="['fa', 'cloud-arrow-up']" /> -->
-                    <span class="file-label"> Choose File </span>
-                  </span>
-                  <span class="file-name"> {{ fileTitle }}</span>
-                </label>
+    <a-spin :spinning="spinning" :delay="delayTime" tip="Generating Responses..." size="large" :key="2">
+      <h2 style="font-weight: bold">Refurbish Surveyees' Responses</h2>
+      <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
+        <a-row :gutter="[16, 16]" style="margin-top: 5px">
+          <a-col> <a target="_blank" @click="downloadTemplate">Download File Template</a><i> - Populate data in this template to upload</i> </a-col>
+        </a-row>
+        <br />
+        <a-row :gutter="[16, 16]" style="margin-top: 5px">
+          <a-col style="width: 100%">
+            <form @submit.prevent="onSubmit" enctype="multipart/form-data">
+              <div class="field">
+                <div class="file has-name">
+                  <label class="file-label">
+                    <input class="file-input" type="file" id="file1" name="file1" @change="uploadDoc" required />
+                    <span class="file-cta is-Green">
+                      <!-- <font-awesome-icon class="icon" :icon="['fa', 'cloud-arrow-up']" /> -->
+                      <span class="file-label"> Upload Survey Input </span>
+                    </span>
+                    <span class="file-name"> {{ fileTitle }}</span>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div class="field is-grouped is-justify-content-flex-end">
-              <div class="control">
-                <button class="button is-primary" type="submit">Upload</button>
+              <div class="field is-grouped is-justify-content-flex-end">
+                <div class="control">
+                  <button class="button is-primary" type="submit">Upload</button>
+                </div>
+                <div class="control">
+                  <button class="button is-red" @click="$router.push('/settings')">Cancel</button>
+                </div>
               </div>
-              <div class="control">
-                <button class="button is-red" @click="$router.push('/settings')">Cancel</button>
-              </div>
-            </div>
-          </form>
-        </a-col>
-      </a-row>
-    </a-card>
+            </form>
+          </a-col>
+        </a-row>
+      </a-card>
+    </a-spin>
   </div>
 </template>
 <script>
@@ -40,7 +44,7 @@ const { VITE_API_KEY, VITE_APP_NAME, VITE_API_URL } = import.meta.env
 import { message } from 'ant-design-vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
 import * as http from '/http.js'
-
+import Swal from 'sweetalert2'
 export default defineComponent({
   components: {
     UploadOutlined
@@ -84,6 +88,7 @@ export default defineComponent({
     let fileValue = ref()
 
     const uploadDoc = (event) => {
+      fileValue = ref()
       let file = event.target.files[0]
       if (file) {
         fileTitle.value = file.name
@@ -91,14 +96,32 @@ export default defineComponent({
       }
     }
 
+    let i = 0
     const onSubmit = async () => {
+      changeSpinning()
       try {
         let formData = new FormData()
         formData.append('file1', fileValue.value)
         let { data } = await http.post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData)
-        setTimeout( () => {
-          console.log('data', data)
-          exportToCsv('output.csv', data)
+        setTimeout(() => {
+          // console.log('data', data.length)
+          if (data.length > 1) {
+            exportToCsv('output.csv', data)
+
+            changeSpinning()
+            Swal.fire({
+              icon: 'success',
+              title: 'Success!',
+              text: 'Generated responses successfully.'
+            })
+          } else {
+            changeSpinning()
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'Something went wrong! Please refresh and try again.'
+            })
+          }
         }, 10000)
       } catch (e) {
         if (e.status == 400) {
@@ -108,7 +131,6 @@ export default defineComponent({
     }
 
     const exportToCsv = (filename, rows) => {
-      console.log("exportToCsv called")
       let processRow = (row) => {
         let finalVal = ''
         for (let j = 0; j < row.length; j++) {
@@ -149,7 +171,16 @@ export default defineComponent({
       }
     }
 
+    const downloadTemplate = () => {
+      exportToCsv('template.csv', [
+        ['respid', 'qn', 'rating', 'response'],
+        ['1', 'C7. [Rose]Olay Luminous Niacinamide + Rose Complex Repairs 98% of skin damage in 24 hours to give you a healthy rosy glow', '5', 'It deals with dull skin and gives rosy and healthy skin']
+      ])
+    }
+
     return {
+      downloadTemplate,
+
       exportToCsv,
       fileValue,
       fileTitle,
@@ -162,7 +193,8 @@ export default defineComponent({
 
       uploadFile,
       uploadDoc,
-      onSubmit
+      onSubmit,
+      delayTime
     }
   }
 })
@@ -187,5 +219,19 @@ export default defineComponent({
 
 label {
   font-weight: 500;
+}
+
+#myProgress {
+  width: 100%;
+  background-color: #ddd;
+}
+
+#myBar {
+  width: 10%;
+  height: 30px;
+  background-color: #04aa6d;
+  text-align: center;
+  line-height: 30px;
+  color: white;
 }
 </style>

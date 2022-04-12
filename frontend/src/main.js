@@ -3,6 +3,7 @@ import router from './router.js'
 import store from './store.js'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/antd.css'
