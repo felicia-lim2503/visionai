@@ -55,7 +55,7 @@
 </template>
 <script>
 import { defineComponent, ref, onMounted } from "vue"
-const { VITE_API_KEY } = import.meta.env
+const { VITE_API_KEY } = '/config.js'
 import {
   UserOutlined,
   LaptopOutlined,

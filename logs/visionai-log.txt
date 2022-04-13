@@ -1,0 +1,66 @@
+
+> @js-node/expressjs@0.0.1 app /home/ubuntu/visionai/backend
+> nodemon --trace-warnings index.js "development"
+
+[33m[nodemon] 2.0.15[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,json[39m
+[32m[nodemon] starting `node --trace-warnings index.js development`[39m
+/home/ubuntu/visionai/backend /home/ubuntu/visionai/backend
+missing common configuration file(s) Error: Cannot find module '/home/ubuntu/visionai/backend/apps/app-template/config/secret/common.env.js'
+Require stack:
+- /home/ubuntu/visionai/@es-labs/node/config.js
+- /home/ubuntu/visionai/backend/index.js
+missing environment specific configuration file(s) Error: Cannot find module '/home/ubuntu/visionai/backend/apps/app-template/config/secret/development.env.js'
+Require stack:
+- /home/ubuntu/visionai/@es-labs/node/config.js
+- /home/ubuntu/visionai/backend/index.js
+CONFIG DONE!
+Globals setup and config done. Starting app... 
+services - start - begin
+[(development) app-template 0.0.1] listening on port 3000 using http
+Signal SIGINT
+
+  nodemon win - can see messages
+  nodemon bash - can see messages
+  node win - cannot see messages
+  node bash - can see messages
+  
+cleaning up and awaiting exit...
+services - stop - begin
+services - stop - end
+Signal SIGINT
+
+  nodemon win - can see messages
+  nodemon bash - can see messages
+  node win - cannot see messages
+  node bash - can see messages
+  
+cleaning up and awaiting exit...
+services - stop - begin
+services - stop - end
+[32m[nodemon] still waiting for 1 sub-process to finish...[39m
+exiting
+
+> @js-node/expressjs@0.0.1 app /home/ubuntu/visionai/backend
+> nodemon --trace-warnings index.js "development"
+
+[33m[nodemon] 2.0.15[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,json[39m
+[32m[nodemon] starting `node --trace-warnings index.js development`[39m
+/home/ubuntu/visionai/backend /home/ubuntu/visionai/backend
+missing common configuration file(s) Error: Cannot find module '/home/ubuntu/visionai/backend/apps/app-template/config/secret/common.env.js'
+Require stack:
+- /home/ubuntu/visionai/@es-labs/node/config.js
+- /home/ubuntu/visionai/backend/index.js
+missing environment specific configuration file(s) Error: Cannot find module '/home/ubuntu/visionai/backend/apps/app-template/config/secret/development.env.js'
+Require stack:
+- /home/ubuntu/visionai/@es-labs/node/config.js
+- /home/ubuntu/visionai/backend/index.js
+CONFIG DONE!
+Globals setup and config done. Starting app... 
+services - start - begin
+[(development) app-template 0.0.1] listening on port 3000 using http
