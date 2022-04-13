@@ -55,7 +55,7 @@
 </template>
 <script>
 import { defineComponent, ref, onMounted } from "vue"
-const { VITE_API_KEY } = '/config.js'
+import { VITE_API_KEY } from '/config.js'
 import {
   UserOutlined,
   LaptopOutlined,
@@ -90,7 +90,7 @@ export default defineComponent({
     const text = `A dog is a type of domesticated animal.Known for its loyalty and faithfulness,it can be found as a welcome guest in many households across the world.`
 
     onMounted(async () => {
-      // console.log("VITE_API_KEY",VITE_API_KEY)
+      console.log("VITE_API_KEY",VITE_API_KEY)
     })
 
     const delayTime = ref(500)
