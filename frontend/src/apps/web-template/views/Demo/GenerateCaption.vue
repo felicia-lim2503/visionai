@@ -56,11 +56,13 @@
 <script>
 import { defineComponent, ref, onMounted } from "vue"
 import { VITE_API_KEY } from '/config.js'
+
 import {
   UserOutlined,
   LaptopOutlined,
   NotificationOutlined,
 } from "@ant-design/icons-vue"
+
 export default defineComponent({
   components: {
     UserOutlined,
@@ -90,7 +92,7 @@ export default defineComponent({
     const text = `A dog is a type of domesticated animal.Known for its loyalty and faithfulness,it can be found as a welcome guest in many households across the world.`
 
     onMounted(async () => {
-      console.log("VITE_API_KEY",VITE_API_KEY)
+      // console.log("VITE_API_KEY",VITE_API_KEY)
     })
 
     const delayTime = ref(500)
