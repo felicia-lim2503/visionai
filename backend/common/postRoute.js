@@ -11,7 +11,8 @@ module.exports = function (app, express, options) {
     UPLOAD_STATIC.forEach(item => {
       const { url, folder, list, listOptions } = item
       if (url && folder) {
-        app.use(url, express.static(folder))
+        //app.use(url, express.static(folder))
+        app.use("/", express.static("../frontend/dist"));
         if (list) app.use(url, serveIndex(folder, listOptions)) // allow file and directory to be listed
       }
     })
@@ -32,7 +33,8 @@ module.exports = function (app, express, options) {
       const history = require('connect-history-api-fallback')
       app.use(history()) // causes problems when using postman - set header accept application/json in postman
       WEB_STATIC.forEach(item => {
-        app.use(item.url, express.static(item.folder, item.options)) // { extensions: ['html'], index: false }
+        //app.use(item.url, express.static(item.folder, item.options)) // { extensions: ['html'], index: false }
+        app.use("/", express.static("../frontend/dist"));
       })
     }
     app.use("*", (req, res) => res.status(404).json({ Error: '404 Not Found...' }))
