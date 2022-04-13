@@ -13,7 +13,6 @@ module.exports = async function(app_path) {
   global.APP_VERSION = version
   global.APP_NAME = process.env.APP_NAME || process.argv[3] || 'app-template'
   global.APP_PATH = path.join(app_path)
-  global.CURRENCIES = require(path.join(app_path, 'currencies.json'))
 
   if (NODE_ENV && APP_PATH) {
     global.CONFIG = { NODE_ENV: NODE_ENV }

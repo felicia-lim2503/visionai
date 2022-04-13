@@ -8,7 +8,7 @@ const axios = require('axios')
 const PdfKit = require('pdfkit')
 
 const ws = require('@es-labs/node/services/websocket')
-const { sleep } = require('esm')(module)('@es-labs/esm/sleep')
+const { sleep } = require('esm')(module)('../@es-labs/esm/sleep')
 const agenda = require('@es-labs/node/services/mq/agenda').get() // agenda message queue
 const bull = require('@es-labs/node/services/mq/bull').get() // bull message queue
 const gcp = require('@es-labs/node/services/gcp')

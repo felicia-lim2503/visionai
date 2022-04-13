@@ -11,7 +11,7 @@ const app = express()
 // const require = createRequire(import.meta.url)
 // const siblingModule = require('./sibling-module')
 
-const { sleep } = require('esm')(module)('@es-labs/esm/sleep')
+const { sleep } = require('esm')(module)('../@es-labs/esm/sleep')
 
 require('./common/init')(global.CONFIG)
 

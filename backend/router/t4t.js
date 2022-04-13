@@ -6,7 +6,7 @@ const fs = require('fs')
 
 const s = require(`${APP_PATH}/apps/${APP_NAME}/services`) // TBD set the mongodb and knex service
 
-const { validateColumn } = require('esm')(module)('@es-labs/esm/t4t-validate')
+const { validateColumn } = require('esm')(module)('../@es-labs/esm/t4t-validate')
 
 // const { authUser } = require('@es-labs/node/auth')
 const authUser = async (req, res, next) => next()

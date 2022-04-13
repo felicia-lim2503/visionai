@@ -19,8 +19,7 @@
     "update-commit-hash": "git rev-parse --verify --short HEAD > commit-hash"
   },
   "dependencies": {
-    "@es-labs/esm": "file:../../@es-labs/esm",
-    "@es-labs/node": "file:../../@es-labs/node",
+    "@es-labs/node": "file:./@es-labs/node",
     "@sentry/node": "^6.16.1",
     "@sentry/tracing": "^6.16.1",
     "axios": "^0.25.0",
