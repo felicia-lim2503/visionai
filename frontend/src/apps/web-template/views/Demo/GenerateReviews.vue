@@ -114,6 +114,7 @@ export default defineComponent({
               title: 'Success!',
               text: 'Generated responses successfully.'
             })
+            
           } else {
             changeSpinning()
             Swal.fire({

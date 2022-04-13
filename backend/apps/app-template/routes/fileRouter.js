@@ -95,7 +95,7 @@ async function feedModel(cleanedData) {
       for (const [k, v] of Object.entries(value)) {
         let obj = v;
         let row = [];
-        if (index <= 10) { 
+        if (index <= 30) { 
           if (obj.new_response == "") {
             const promises = [];
             promises.push(await callAPI(obj.rating_str, obj.response));
@@ -226,7 +226,7 @@ module.exports = express
         try {
           console.log("parsing complete read", count, "records.");
           output = await generateReview(data);
-          console.log("output", output);
+          // console.log("output", output);
 
           fs.unlink(coolPath, (err) => {
             if (err) {

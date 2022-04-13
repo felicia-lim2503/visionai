@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Article Generation</h2>
+    <h2 style="font-weight: bold">Article Generation</h2>
     <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
       <a-form>
         <a-row :gutter="[16, 16]">
