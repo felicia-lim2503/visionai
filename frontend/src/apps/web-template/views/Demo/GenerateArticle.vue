@@ -91,7 +91,7 @@
 <script>
 import * as http from '../../../../../http.js'
 import { defineComponent, ref, onMounted } from 'vue'
-const { VITE_API_KEY } = import.meta.env
+import { VITE_API_KEY } from '/config.js'
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons-vue'
 export default defineComponent({
   components: {
