@@ -11,11 +11,11 @@ POST https://httpbin.org/post
 Accept: application/json
 
 ### Test healthcheck
-GET http://127.0.0.1:3000/api/healthcheck
+GET http://3.1.201.214:3000/api/healthcheck
 Accept: application/json
 
 ### Test Login - Username & Password
-POST http://127.0.0.1:3000/api/auth/login
+POST http://3.1.201.214:3000/api/auth/login
 content-type: application/json
 
 {
@@ -24,7 +24,7 @@ content-type: application/json
 }
 
 ### Test Login - OTP
-POST http://127.0.0.1:3000/api/auth/otp
+POST http://3.1.201.214:3000/api/auth/otp
 access_token:
 refresh_token: 
 content-type: application/json
@@ -35,13 +35,13 @@ content-type: application/json
 }
 
 ### Post Test - will cause an error because content-type and body is different
-POST http://127.0.0.1:3000/api/test-post-json
+POST http://3.1.201.214:3000/api/test-post-json
 content-type: application/json
 
 hello world
 
 ### Post Test SSE endpoint
-POST http://127.0.0.1:3000/api/sse/event
+POST http://3.1.201.214:3000/api/sse/event
 content-type: application/json
 
 {

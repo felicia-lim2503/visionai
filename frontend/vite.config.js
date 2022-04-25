@@ -41,9 +41,9 @@ export default ({ command, mode }) => {
     server: {
       port: 8080
       // proxy: { // use alias instead
-      //   // '/esm': 'http://127.0.0.1:3000/esm', // does not seem to work
+      //   // '/esm': 'http://3.1.201.214:3000/esm', // does not seem to work
       //   '/@es-labs/esm': {
-      //     target: 'http://127.0.0.1:3000',
+      //     target: 'http://3.1.201.214:3000',
       //     changeOrigin: true,
       //     rewrite: (path) => path.replace(/^\/@es-labs\/esm/, '/esm')
       //   }
