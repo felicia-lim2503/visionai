@@ -6,15 +6,11 @@ const multer = require("multer");
 // const { authUser } = require("@es-labs/node/auth");
 // const StoreKnex = require("../../services").get("knex1");
 const { OPENAI_API } = global.CONFIG;
-const axios = require("axios");
-const csv = require("fast-csv");
 const papa = require("papaparse");
 const path = require("path");
-const { count, clear } = require("console");
-const { clearInterval } = require("timers");
+const fs_extra = require("fs-extra");
 
 const upload = multer({ dest: "./uploadedFiles/" });
-
 
 async function saveInput(req) {
   let xlsx = require("node-xlsx");
@@ -35,7 +31,7 @@ async function saveInput(req) {
 
   //creates the csv string to write it to a file
   for (let i = 0; i < rows.length; i++) {
-    writeStr += rows[i].join(",") + "\n";
+    writeStr += rows[i].join("\t") + "\n";
   }
 
   //writes to a file, but you will presumably send the csv as a
@@ -84,7 +80,7 @@ async function callAPI(rating_str, res) {
     }, Math.floor(Math.random() * 5000));
   });
 }
-
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 async function feedModel(cleanedData) {
   let output = [["respid", "qn", "rating", "response", "new_response"]];
 
@@ -95,32 +91,44 @@ async function feedModel(cleanedData) {
       for (const [k, v] of Object.entries(value)) {
         let obj = v;
         let row = [];
-        if (index <= 30) { 
-          if (obj.new_response == "") {
-            const promises = [];
-            promises.push(await callAPI(obj.rating_str, obj.response));
-            Promise.all(promises)
-              .then((results) => {
-                obj.new_response = results[0].data.choices[0].text;
-                row = [
-                  obj.respid,
-                  obj.qn,
-                  obj.rating,
-                  obj.response,
-                  obj.new_response.trim(),
-                ];
+        // if (index <= 60) {
+        if (obj.new_response == "") {
+          await delay(5000);
+          const promises = [];
+          promises.push(await callAPI(obj.rating_str, obj.response));
+          Promise.all(promises)
+            .then((results) => {
+              obj.new_response = results[0].data.choices[0].text;
+              row = [
+                obj.respid,
+                obj.qn,
+                obj.rating,
+                obj.response,
+                obj.new_response.trim(),
+              ];
 
-                // console.log("row", row);
-                output.push(row);
-                // console.log("output", output);
-                // console.log("print")
-              })
-              .catch((e) => {
-                // Handle errors here
-                console.log("errorS?", e);
-              });
-          }
+              // console.log("row", row);
+              output.push(row);
+              // console.log("output", output);
+              // console.log("print")
+            })
+            .catch((e) => {
+              // Handle errors here
+              console.log("errorS?", e);
+            });
+        } else {
+          row = [
+            obj.respid,
+            obj.qn,
+            obj.rating,
+            obj.response,
+            obj.new_response,
+          ];
+
+          // console.log("row", row);
+          output.push(row);
         }
+        // }
       }
     }
 
@@ -174,8 +182,7 @@ function cleanData(data) {
               [data[0][2]]: eachReview[2],
               rating_str: rating,
               [data[0][3]]: eachReview[3],
-              new_response:
-                "Unable to generate new response as it is too short",
+              new_response: eachReview[3],
             };
           }
         }
@@ -209,7 +216,7 @@ module.exports = express
     res.json("testing");
   })
 
-  .post("/saveFile", upload.single("file1"), function (req, res) {
+  .post("/saveFile", upload.single("file1"), async function (req, res) {
     saveInput(req);
     const coolPath = path.join(
       __dirname,
@@ -219,6 +226,7 @@ module.exports = express
     let data = [];
     let count = 0; // cache the running count
     papa.parse(file, {
+      delimiter: "\t",
       step: function (results) {
         data.push(results.data);
         count++;
@@ -242,4 +250,5 @@ module.exports = express
         return res.json(output);
       },
     });
+    await fs_extra.remove('./uploadedFiles/');
   });

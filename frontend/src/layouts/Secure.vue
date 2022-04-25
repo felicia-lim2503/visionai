@@ -63,12 +63,12 @@ export default {
 
     onMounted(async () => {
       console.log('SECURE mounted!')
-      idleTimer.timeouts.push({
-        time: 300, // timme in seconds and ascending value
-        fn: () => alert('Idle Timeout Test'),
-        stop: true
-      })
-      idleTimer.start()
+      // idleTimer.timeouts.push({
+      //   time: 300, // timme in seconds and ascending value
+      //   fn: () => alert('Idle Timeout Test'),
+      //   stop: true
+      // })
+      // idleTimer.start()
 
       SECURE_ROUTES.filter((route) => route.meta.layout === 'layout-secure').forEach((route) => {
         const submenu = route.path.split('/').length === 3 ? route.path.split('/', 2)[1] : '' // 2 or 3 only
@@ -90,7 +90,7 @@ export default {
     })
     onBeforeUnmount(() => {
       // close WS
-      idleTimer.stop()
+      // idleTimer.stop()
       ON_LOGOUT && ON_LOGOUT()
     })
 
