@@ -151,8 +151,10 @@ function cleanData(data) {
             rating = "average";
           } else if (eachReview[2] == 2) {
             rating = "bad";
-          } else {
+          } else if (eachReview[2] == 1) {
             rating = "very bad";
+          } else if (eachReview[2] == 0) {
+            rating = "";
           }
 
           let numOfWords = countWords(eachReview[3]);
