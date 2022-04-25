@@ -162,15 +162,15 @@ npm run app:lint --workspace=js-node/expressjs -- development app-template
 ```
 
 **Visit the following URLs**
-- http://3.1.201.214:3000/api/healthcheck - app is running normally
-- http://3.1.201.214:3000 - Website served by Express with functional samples and demos
-- http://3.1.201.214:3000/api-docs - OpenAPI documentation
+- http://127.0.0.1:3000/api/healthcheck - app is running normally
+- http://127.0.0.1:3000 - Website served by Express with functional samples and demos
+- http://127.0.0.1:3000/api-docs - OpenAPI documentation
 
 Note: to generate api docs, visit [js-node/openapi-file-joiner](js-node/openapi-file-joiner) and follow readme file, also look at the config properties OPENAPI_PATH and OPENAPI_VALIDATOR in [js-node/expressjs/apps/app-template/config/common.env.js](js-node/expressjs/apps/app-template/config/common.env.js).
 
 ### No bundler frontend
 
-See [js-web/vue-nobundler](js-web/vue-nobundler). Served from [http://3.1.201.214:3000/native/index.html](http://3.1.201.214:3000/native/index.html)
+See [js-web/vue-nobundler](js-web/vue-nobundler). Served from [http://127.0.0.1:3000/native/index.html](http://127.0.0.1:3000/native/index.html)
 
 ### Testing
 
@@ -257,7 +257,7 @@ npm run seed --workspace=js-node/nest-admin # seed the data
 npm run start:dev --workspace=js-node/nest-admin # start the server again
 ```
 
-- Navigate to http://3.1.201.214:3000
+- Navigate to http://127.0.0.1:3000
 - You can use `test.http` file in the `nest-admin` folder file with `VS Code REST Client` plugin to test enpoints
 
 ### ReactJS Example
@@ -266,7 +266,7 @@ npm run start:dev --workspace=js-node/nest-admin # start the server again
 npm run start --workspace=js-web/react-admin
 ```
 
-- Navigate to http://3.1.201.214:3001
+- Navigate to http://127.0.0.1:3001
 - login details: admin@test.com / password
 
 ---

@@ -66,7 +66,7 @@ if (SAML_OPTIONS) {
 // });
 
 // FROM IDP
-// fetch("http://3.1.201.214:3000/api/saml/callback", {
+// fetch("http://127.0.0.1:3000/api/saml/callback", {
 //   "headers": {
 //     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 //     "accept-language": "en-US,en;q=0.9",
