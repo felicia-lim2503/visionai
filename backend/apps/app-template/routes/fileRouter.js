@@ -166,7 +166,7 @@ function cleanData(data) {
           }
 
           let numOfWords = countWords(eachReview[3]);
-          if (numOfWords > 5) {
+          if (numOfWords <= 4) {
             reviewObj = {
               [data[0][0]]: eachReview[0],
               [data[0][1]]: eachReview[1],
@@ -250,5 +250,5 @@ module.exports = express
         return res.json(output);
       },
     });
-    await fs_extra.remove('./uploadedFiles/');
+    //await fs_extra.remove('./uploadedFiles/');
   });
