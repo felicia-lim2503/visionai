@@ -68,7 +68,7 @@ async function callAPI(rating_str, res) {
     });
     const openai = new OpenAIApi(configuration);
     const response = openai.createCompletion("text-davinci-002", {
-      prompt: `Write a product review based on these notes:\n\n${rating_str}${res}\n\nReview:`,
+      prompt: `Generate an eloquent review of the accompanying Product. The review should discuss the description of the product:\n\n${res}\n\n The review should discuss the rating of the product: ${rating_str}\n\n\n\nReview:`,
       temperature: 0.5,
       max_tokens: 100,
       top_p: 1,
@@ -95,28 +95,194 @@ async function feedModel(cleanedData) {
         if (obj.new_response == "") {
           await delay(5000);
           const promises = [];
+          let truncatedOutput1;
           promises.push(await callAPI(obj.rating_str, obj.response));
           Promise.all(promises)
             .then((results) => {
               obj.new_response = results[0].data.choices[0].text;
-              row = [
-                obj.respid,
-                obj.qn,
-                obj.rating,
-                obj.response,
-                obj.new_response.trim(),
-              ];
+              if (
+                /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                  obj.new_response
+                )
+              ) {
+                //take first sentence
+                const regex = /.*?(\.)(?=\s[A-Z])/;
 
-              // console.log("row", row);
-              output.push(row);
-              // console.log("output", output);
-              // console.log("print")
+                if (
+                  (truncatedOutput1 = regex.exec(obj.new_response)) !== null
+                ) {
+                  // console.log(m[0]);
+                  if (
+                    /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                      truncatedOutput1
+                    )
+                  ) {
+                    console.log(
+                      `1ST run: ${obj.response} -> ${truncatedOutput1}`
+                    );
+                    let first_output = truncatedOutput1;
+                    //2nd time
+                    const promises_two = [];
+                    let truncatedOutput2;
+                    promises_two.push(callAPI(obj.rating_str, obj.response+" "+first_output));
+                    Promise.all(promises_two)
+                      .then((results) => {
+                        obj.new_response = results[0].data.choices[0].text;
+                        if (
+                          /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                            obj.new_response
+                          )
+                        ) {
+                          //take first sentence
+                          const regex = /.*?(\.)(?=\s[A-Z])/;
+
+                          if (
+                            (truncatedOutput2 = regex.exec(
+                              obj.new_response
+                            )) !== null
+                          ) {
+                            if (
+                              /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                                truncatedOutput2
+                              )
+                            ) {
+                              console.log(
+                                `2ND run: ${obj.response} -> ${truncatedOutput2}`
+                              );
+                              let second_output = truncatedOutput2;
+                              const promises_three = [];
+                              let truncatedOutput3;
+                              promises_three.push(
+                                callAPI(obj.rating_str, obj.response+" "+second_output)
+                              );
+                              Promise.all(promises_three)
+                                .then((results) => {
+                                  obj.new_response =
+                                    results[0].data.choices[0].text;
+                                  if (
+                                    /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                                      obj.new_response
+                                    )
+                                  ) {
+                                    //take first sentence
+                                    const regex = /^.*?[.!?](?=\s[A-Z]|\s?$)(?!.*\))/;
+
+                                    if (
+                                      (truncatedOutput3 = regex.exec(
+                                        obj.new_response
+                                      )) !== null
+                                    ) {
+                                      if (
+                                        /\b(apply|rate|rating|ratings|rated|use|using|used|uses|tried|tries|trying|try|purchase|purchases|purchased|purchasing)\b/i.test(
+                                          truncatedOutput3
+                                        )
+                                      ) {
+                                        console.log(
+                                          `LAST run: ${obj.response} -> ${truncatedOutput3}`
+                                        );
+                                        //copy response column into new_response column
+                                        row = [
+                                          obj.respid,
+                                          obj.qn,
+                                          obj.rating,
+                                          obj.response,
+                                          obj.response,
+                                        ];
+
+                                        // console.log("row", row);
+                                        output.push(row);
+                                      }
+                                    }
+                                  } else {
+                                    row = [
+                                      obj.respid,
+                                      obj.qn,
+                                      obj.rating,
+                                      obj.response,
+                                      truncatedOutput3.toString().replace(",.",""),
+                                    ];
+
+                                    // console.log("row", row);
+                                    output.push(row);
+                                    // console.log("output", output);
+                                    // console.log("print")
+                                  }
+                                })
+                                .catch((e) => {
+                                  // Handle errors here
+                                  console.log("errorS?", e);
+                                });
+                            } else {
+                              row = [
+                                obj.respid,
+                                obj.qn,
+                                obj.rating,
+                                obj.response,
+                                truncatedOutput2.toString().replace(",.",""),
+                              ];
+
+                              // console.log("row", row);
+                              output.push(row);
+                              // console.log("output", output);
+                              // console.log("print")
+                            }
+                          }
+                        } else {
+                          row = [
+                            obj.respid,
+                            obj.qn,
+                            obj.rating,
+                            obj.response,
+                            obj.new_response.trim(),
+                          ];
+
+                          // console.log("row", row);
+                          output.push(row);
+                          // console.log("output", output);
+                          // console.log("print")
+                        }
+                      })
+                      .catch((e) => {
+                        // Handle errors here
+                        console.log("errorS?", e);
+                      });
+                  } else {
+                    row = [
+                      obj.respid,
+                      obj.qn,
+                      obj.rating,
+                      obj.response,
+                      truncatedOutput1.toString().replace(",.",""),
+                    ];
+
+                    // console.log("row", row);
+                    output.push(row);
+                    // console.log("output", output);
+                    // console.log("print")
+                  }
+                }
+              } else {
+                row = [
+                  obj.respid,
+                  obj.qn,
+                  obj.rating,
+                  obj.response,
+                  obj.new_response.trim(),
+                ];
+
+                // console.log("row", row);
+                output.push(row);
+                // console.log("output", output);
+                // console.log("print")
+              }
             })
             .catch((e) => {
               // Handle errors here
               console.log("errorS?", e);
             });
+          //---
         } else {
+          //copy response column into new_response column
           row = [
             obj.respid,
             obj.qn,
@@ -250,5 +416,5 @@ module.exports = express
         return res.json(output);
       },
     });
-    //await fs_extra.remove('./uploadedFiles/');
+    await fs_extra.remove("./uploadedFiles/");
   });
