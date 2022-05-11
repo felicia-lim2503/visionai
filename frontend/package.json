@@ -24,6 +24,7 @@
     "@antv/g6": "^4.5.3",
     "@es-labs/esm": "file:../@es-labs/esm",
     "ant-design-vue": "^2.2.8",
+    "axios": "^0.27.2",
     "bulma": "^0.9.3",
     "echarts": "^5.2.2",
     "firebase": "^9.6.3",
