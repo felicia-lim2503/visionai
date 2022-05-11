@@ -23,6 +23,11 @@
                 </div>
               </div>
 
+              <div class="field is-grouped is-justify-content-flex-start">
+                <div class="control">
+                  <a-progress stroke-linecap="square" :percent="progressPercentage" style="width: 250px" />
+                </div>
+              </div>
               <div class="field is-grouped is-justify-content-flex-end">
                 <div class="control">
                   <button class="button is-primary" type="submit">Upload</button>
@@ -42,16 +47,18 @@
 import { defineComponent, ref, onMounted } from 'vue'
 const { VITE_API_KEY, VITE_APP_NAME, VITE_API_URL } = import.meta.env
 import { message } from 'ant-design-vue'
-import { UploadOutlined } from '@ant-design/icons-vue'
+import { PercentageOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import * as http from '/http.js'
 import Swal from 'sweetalert2'
+import axios from 'axios'
+
 export default defineComponent({
   components: {
     UploadOutlined
   },
   setup() {
     let spinning = ref(false)
-
+    let progressPercentage = ref(0)
     let OPENAI_API_KEY = ref('')
 
     onMounted(async () => {
@@ -98,32 +105,78 @@ export default defineComponent({
 
     let i = 0
     const onSubmit = async () => {
+      let counter = 0
       changeSpinning()
       try {
         let formData = new FormData()
         formData.append('file1', fileValue.value)
-        let { data } = await http.post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData)
-        setTimeout(() => {
-          // console.log('data', data.length)
-          if (data.length > 1) {
-            exportToCsv('output.csv', data)
+        // let { data } = await http.post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData)
+        // setTimeout(() => {
+        //   console.log('data', data)
+        //   if (data.length > 1) {
+        //     exportToCsv('output.csv', data)
 
-            changeSpinning()
-            Swal.fire({
-              icon: 'success',
-              title: 'Success!',
-              text: 'Generated responses successfully.'
-            })
-            
-          } else {
-            changeSpinning()
-            Swal.fire({
-              icon: 'error',
-              title: 'Oops...',
-              text: 'Something went wrong! Please refresh and try again.'
-            })
-          }
-        }, 10000)
+        //     changeSpinning()
+        //     Swal.fire({
+        //       icon: 'success',
+        //       title: 'Success!',
+        //       text: 'Generated responses successfully.'
+        //     })
+
+        //   } else {
+        //     changeSpinning()
+        //     Swal.fire({
+        //       icon: 'error',
+        //       title: 'Oops...',
+        //       text: 'Something went wrong! Please refresh and try again.'
+        //     })
+        //   }
+        // }, 10000)
+
+        axios
+          .post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData, {
+            onUploadProgress: (progressEvent) => {
+              // console.log('progressEvent', progressEvent)
+              // let percentComplete = progressEvent.loaded / progressEvent.total
+              // percentComplete = parseInt(percentComplete * 100)
+              // console.log(percentComplete)
+
+              let i = 0
+              setInterval(function () {
+                if (i == 100 || progressPercentage.value >= 100 || progressPercentage.value == "error") {
+                  clearInterval(this)
+                } else {
+                  // console.log('Currently at ' + i++)
+                  progressPercentage.value = i++
+                }
+              }, 1000)
+            }
+          })
+          .then((response) => {
+            setTimeout(() => {
+              console.log('data', response.data)
+              if (response.data.length > 1) {
+                console.log('response.data', response.data)
+                exportToCsv('output.csv', response.data)
+                progressPercentage.value = 100
+                changeSpinning()
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success!',
+                  text: 'Generated responses successfully.'
+                })
+              } else {
+
+                changeSpinning()
+                progressPercentage.value = "error"
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'Something went wrong! Please refresh and try again.'
+                })
+              }
+            }, 10000)
+          })
       } catch (e) {
         if (e.status == 400) {
           console.log('error!')
@@ -195,7 +248,9 @@ export default defineComponent({
       uploadFile,
       uploadDoc,
       onSubmit,
-      delayTime
+      delayTime,
+
+      progressPercentage
     }
   }
 })
