@@ -1,46 +1,61 @@
 <template>
   <div>
-    <a-spin :spinning="spinning" :delay="delayTime" tip="Generating Responses..." size="large" :key="2">
-      <h2 style="font-weight: bold">Refurbish Surveyees' Responses</h2>
-      <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
-        <a-row :gutter="[16, 16]" style="margin-top: 5px">
-          <a-col> <a target="_blank" @click="downloadTemplate">Download File Template</a><i> - Populate data in this template to upload</i> </a-col>
-        </a-row>
-        <br />
-        <a-row :gutter="[16, 16]" style="margin-top: 5px">
-          <a-col style="width: 100%">
-            <form @submit.prevent="onSubmit" enctype="multipart/form-data">
-              <div class="field">
-                <div class="file has-name">
-                  <label class="file-label">
-                    <input class="file-input" type="file" id="file1" name="file1" @change="uploadDoc" required />
-                    <span class="file-cta is-Green">
-                      <!-- <font-awesome-icon class="icon" :icon="['fa', 'cloud-arrow-up']" /> -->
-                      <span class="file-label"> Upload Survey Input </span>
-                    </span>
-                    <span class="file-name"> {{ fileTitle }}</span>
-                  </label>
-                </div>
+    <!-- <a-spin :spinning="spinning" :delay="delayTime" tip="Generating Responses..." size="large" :key="2"> -->
+    <div id="myNav" class="overlay">
+      <!-- <a href="javascript:void(0)" class="closebtn" @click="closeNav()">&times;</a> -->
+      <div style="position: absolute; top: 50%; left: 45%; margin-top: -50px; margin-left: -50px; width: 100px; height: 100px">
+        <p style="font-weight:bold; color: white; font-size: 18px; width: 235px; text-align:center;">Generating Responses..</p>
+        <a-progress stroke-linecap="square" :percent="progressPercentage" style="width: 250px; margin-top: 10px;" /><br/>
+        <a-button style="margin-top: 20px; margin-left:60px;"
+          type="primary"
+          @click="
+            $router.push('/demo/reviews');
+            closeNav()
+          "
+          >Cancel Upload</a-button
+        >
+      </div>
+    </div>
+    <h2 style="font-weight: bold">Refurbish Surveyees' Responses</h2>
+    <a-card style="width: 100%" :style="{ backgroundColor: 'white', padding: '20px' }">
+      <a-row :gutter="[16, 16]" style="margin-top: 5px">
+        <a-col> <a target="_blank" @click="downloadTemplate">Download File Template</a><i> - Populate data in this template to upload</i> </a-col>
+      </a-row>
+      <br />
+      <a-row :gutter="[16, 16]" style="margin-top: 5px">
+        <a-col style="width: 100%">
+          <form @submit.prevent="onSubmit" enctype="multipart/form-data">
+            <div class="field">
+              <div class="file has-name">
+                <label class="file-label">
+                  <input class="file-input" type="file" id="file1" name="file1" @change="uploadDoc" required />
+                  <span class="file-cta is-Green">
+                    <!-- <font-awesome-icon class="icon" :icon="['fa', 'cloud-arrow-up']" /> -->
+                    <span class="file-label"> Upload Survey Input </span>
+                  </span>
+                  <span class="file-name"> {{ fileTitle }}</span>
+                </label>
               </div>
+            </div>
 
-              <div class="field is-grouped is-justify-content-flex-start">
-                <div class="control">
-                  <a-progress stroke-linecap="square" :percent="progressPercentage" style="width: 250px" />
-                </div>
+            <div class="field is-grouped is-justify-content-flex-start">
+              <div class="control">
+                <!-- <a-progress stroke-linecap="square" :percent="progressPercentage" style="width: 250px" /> -->
               </div>
-              <div class="field is-grouped is-justify-content-flex-end">
-                <div class="control">
-                  <button class="button is-primary" type="submit">Upload</button>
-                </div>
-                <div class="control">
-                  <button class="button is-red" @click="$router.push('/settings')">Cancel</button>
-                </div>
+            </div>
+            <div class="field is-grouped is-justify-content-flex-end">
+              <div class="control">
+                <button class="button is-primary" type="submit">Upload</button>
               </div>
-            </form>
-          </a-col>
-        </a-row>
-      </a-card>
-    </a-spin>
+              <div class="control">
+                <button class="button is-red" @click="$router.push('/demo/reviews')">Cancel</button>
+              </div>
+            </div>
+          </form>
+        </a-col>
+      </a-row>
+    </a-card>
+    <!-- </a-spin> -->
   </div>
 </template>
 <script>
@@ -51,12 +66,15 @@ import { PercentageOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import * as http from '/http.js'
 import Swal from 'sweetalert2'
 import axios from 'axios'
+import { useRoute, useRouter } from 'vue-router'
 
 export default defineComponent({
   components: {
     UploadOutlined
   },
   setup() {
+    const router = useRouter()
+    const route = useRoute()
     let spinning = ref(false)
     let progressPercentage = ref(0)
     let OPENAI_API_KEY = ref('')
@@ -102,39 +120,19 @@ export default defineComponent({
         fileValue.value = file
       }
     }
-
+    let uploadCancelTokenSource = axios.CancelToken.source()
+    let progressInterval = null
     let i = 0
     const onSubmit = async () => {
+      openNav()
       let counter = 0
       changeSpinning()
       try {
         let formData = new FormData()
         formData.append('file1', fileValue.value)
-        // let { data } = await http.post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData)
-        // setTimeout(() => {
-        //   console.log('data', data)
-        //   if (data.length > 1) {
-        //     exportToCsv('output.csv', data)
-
-        //     changeSpinning()
-        //     Swal.fire({
-        //       icon: 'success',
-        //       title: 'Success!',
-        //       text: 'Generated responses successfully.'
-        //     })
-
-        //   } else {
-        //     changeSpinning()
-        //     Swal.fire({
-        //       icon: 'error',
-        //       title: 'Oops...',
-        //       text: 'Something went wrong! Please refresh and try again.'
-        //     })
-        //   }
-        // }, 10000)
-
         axios
           .post(`${VITE_API_URL}/api/app-template/fileRouter/saveFile`, formData, {
+            cancelToken: uploadCancelTokenSource.token,
             onUploadProgress: (progressEvent) => {
               // console.log('progressEvent', progressEvent)
               // let percentComplete = progressEvent.loaded / progressEvent.total
@@ -142,8 +140,8 @@ export default defineComponent({
               // console.log(percentComplete)
 
               let i = 0
-              setInterval(function () {
-                if (i == 100 || progressPercentage.value >= 100 || progressPercentage.value == "error") {
+              progressInterval = setInterval(function () {
+                if (i == 100 || progressPercentage.value >= 100 || progressPercentage.value == 'error') {
                   clearInterval(this)
                 } else {
                   // console.log('Currently at ' + i++)
@@ -154,26 +152,29 @@ export default defineComponent({
           })
           .then((response) => {
             setTimeout(() => {
-              console.log('data', response.data)
+              // console.log('data', response.data)
               if (response.data.length > 1) {
-                console.log('response.data', response.data)
+                // console.log('response.data', response.data)
                 exportToCsv('output.csv', response.data)
                 progressPercentage.value = 100
-                changeSpinning()
+                // changeSpinning()
                 Swal.fire({
                   icon: 'success',
                   title: 'Success!',
                   text: 'Generated responses successfully.'
+                }).then((result) => {
+                  closeNav()
                 })
               } else {
-
-                changeSpinning()
-                progressPercentage.value = "error"
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Oops...',
-                  text: 'Something went wrong! Please refresh and try again.'
-                })
+                // changeSpinning()
+                if (!uploadCancelTokenSource.token.reason.message) {
+                  progressPercentage.value = 'error'
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please refresh and try again.'
+                  })
+                }
               }
             }, 10000)
           })
@@ -232,7 +233,24 @@ export default defineComponent({
       ])
     }
 
+    const openNav = () => {
+      document.getElementById('myNav').style.display = 'block'
+    }
+
+    const closeNav = () => {
+      document.getElementById('myNav').style.display = 'none'
+      router.push('/demo/reviews')
+      uploadCancelTokenSource.cancel('Operation canceled by the user')
+      uploadCancelTokenSource = axios.CancelToken.source()
+
+      fileTitle.value = ''
+      progressPercentage.value = 0
+      clearInterval(progressInterval)
+    }
+
     return {
+      openNav,
+      closeNav,
       downloadTemplate,
 
       exportToCsv,
@@ -289,5 +307,61 @@ label {
   text-align: center;
   line-height: 30px;
   color: white;
+}
+
+.overlay {
+  height: 100%;
+  width: 100%;
+  display: none;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.overlay-content {
+  position: relative;
+  top: 25%;
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.overlay a {
+  padding: 8px;
+  text-decoration: none;
+  font-size: 36px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.overlay a:hover,
+.overlay a:focus {
+  color: #f1f1f1;
+}
+
+.overlay .closebtn {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 60px;
+}
+
+.ant-progress-text {
+  color: white;
+}
+
+@media screen and (max-height: 450px) {
+  .overlay a {
+    font-size: 20px;
+  }
+  .overlay .closebtn {
+    font-size: 40px;
+    top: 15px;
+    right: 35px;
+  }
 }
 </style>
