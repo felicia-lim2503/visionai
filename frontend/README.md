@@ -51,7 +51,7 @@ npm run test:all:dev
 npm run build
 ```
 
-Need to run **js-node/express** to serve the site on [http://3.1.201.214:3000/vite](http://3.1.201.214:3000/vite)
+Need to run **js-node/express** to serve the site on [http://127.0.0.1:3000/vite](http://127.0.0.1:3000/vite)
 
 ### Deploy to GCP Cloud Storage (uat environment)
 

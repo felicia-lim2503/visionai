@@ -124,7 +124,9 @@ async function feedModel(cleanedData) {
                     //2nd time
                     const promises_two = [];
                     let truncatedOutput2;
-                    promises_two.push(callAPI(obj.rating_str, obj.response+" "+first_output));
+                    promises_two.push(
+                      callAPI(obj.rating_str, obj.response + " " + first_output)
+                    );
                     Promise.all(promises_two)
                       .then((results) => {
                         obj.new_response = results[0].data.choices[0].text;
@@ -153,7 +155,10 @@ async function feedModel(cleanedData) {
                               const promises_three = [];
                               let truncatedOutput3;
                               promises_three.push(
-                                callAPI(obj.rating_str, obj.response+" "+second_output)
+                                callAPI(
+                                  obj.rating_str,
+                                  obj.response + " " + second_output
+                                )
                               );
                               Promise.all(promises_three)
                                 .then((results) => {
@@ -165,7 +170,8 @@ async function feedModel(cleanedData) {
                                     )
                                   ) {
                                     //take first sentence
-                                    const regex = /^.*?[.!?](?=\s[A-Z]|\s?$)(?!.*\))/;
+                                    const regex =
+                                      /^.*?[.!?](?=\s[A-Z]|\s?$)(?!.*\))/;
 
                                     if (
                                       (truncatedOutput3 = regex.exec(
@@ -199,7 +205,9 @@ async function feedModel(cleanedData) {
                                       obj.qn,
                                       obj.rating,
                                       obj.response,
-                                      truncatedOutput3.toString().replace(",.",""),
+                                      truncatedOutput3
+                                        .toString()
+                                        .replace(",.", ""),
                                     ];
 
                                     // console.log("row", row);
@@ -218,7 +226,7 @@ async function feedModel(cleanedData) {
                                 obj.qn,
                                 obj.rating,
                                 obj.response,
-                                truncatedOutput2.toString().replace(",.",""),
+                                truncatedOutput2.toString().replace(",.", ""),
                               ];
 
                               // console.log("row", row);
@@ -252,7 +260,7 @@ async function feedModel(cleanedData) {
                       obj.qn,
                       obj.rating,
                       obj.response,
-                      truncatedOutput1.toString().replace(",.",""),
+                      truncatedOutput1.toString().replace(",.", ""),
                     ];
 
                     // console.log("row", row);
@@ -394,7 +402,7 @@ module.exports = express
     papa.parse(file, {
       delimiter: "\t",
       step: function (results) {
-        if(results.data[0] != ''){
+        if (results.data[0] != "") {
           data.push(results.data);
           count++;
         }
@@ -406,17 +414,28 @@ module.exports = express
           output = await generateReview(data);
           // console.log("output", output);
 
-          fs.unlink(coolPath, (err) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-          });
+          // fs.unlink(coolPath, (err) => {
+          //   if (err) {
+          //     console.error(err);
+          //     return;
+          //   }
+          // });
         } catch (e) {
           console.log("error!", e);
         }
+        // await fs_extra.remove(`/../survey-inputs/${req.file.originalname}.csv`);
+
+        const fs = require("fs");
+
+        const path = `./apps/app-template/survey-inputs/${req.file.originalname}.csv`;
+        fs.unlink(path, function (err) {
+          if (err) {
+            console.error(err);
+          } else {
+            console.log("File removed:", path);
+          }
+        });
         return res.json(output);
       },
     });
-       // await fs_extra.remove("/../survey-inputs/");
   });
